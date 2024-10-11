@@ -1,0 +1,48 @@
+managed; //implementation in class zbp_cd_i_r_orden_fv unique;
+//strict ( 2 );
+
+define behavior for ZCD_I_R_ORDEN_FV alias Order
+implementation in class zcl_bp_order_fv unique
+persistent table zorden_fv
+with additional save
+lock master
+authorization master ( instance )
+etag master deliverydate
+{
+  create;
+  update;
+  delete;
+ // field ( readonly : update ) Id;
+  field ( readonly )  createon;
+  field ( mandatory : create ) Id, Email;
+  field ( features : instance ) Id;
+
+  mapping for zorden_fv corresponding;
+
+  //field ( features : instance ) Id;
+  association _Items { create; }
+  validation validateStatus on save { field orderstatus; }
+
+  action ( features : instance ) acceptOrder result[1] $self;
+  action ( features : instance ) refuseOrder result[1] $self;
+
+  action createOrder result [1] $self;
+}
+
+define behavior for ZCD_I_V_ITEMS_FV alias Items
+implementation in class zcl_bp_items_fv unique
+persistent table zitems_fv
+lock dependent by _Orden
+authorization dependent by _Orden
+etag master releasedate
+{
+  update;
+  delete;
+  field ( readonly ) Id;
+  field ( readonly : update ) Id_item;
+  field ( mandatory : create ) Id_item;
+
+  mapping for zitems_fv corresponding;
+
+  association _Orden;
+}
